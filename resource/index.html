@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>五子棋</title>
+        <style type="text/css">
+            .board {
+                position: relative;
+                display: flex;
+                flex-wrap: wrap;
+                width: 450px;
+                height: 450px;
+                margin: 0 auto;
+            }
+
+            .my_btn {
+                position: relative;
+                display: flex;
+                flex-wrap: wrap;
+                margin: 30 0 auto;
+            }
+
+            .square {
+                width: 30px;
+                height: 30px;
+                box-sizing: border-box;
+                border: 1px solid rgb(124, 58, 58);
+                background-color: #f7b8b8;
+            }
+
+            .circle {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                background-color: #f7b8b8;
+                /* box-sizing: border-box; */
+                position: absolute;
+            }
+
+            .black {
+                background-color: black;
+            }
+
+            .white {
+                background-color: white;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div style="text-align: center;">
+            <h1 style="text-align: center;"> 双人五子棋大战 </h1>
+        </div>
+        <div class="board"> </div>
+        <script type="text/javascript">
+            let board = document.querySelector('.board');
+
+            // 创建棋盘
+            for (let i = 0; i < 225; i++) {
+                let square = document.createElement('div');
+                square.className = 'square';
+                board.appendChild(square);
+            }
+
+            let squares = document.querySelectorAll('.square');
+            let player = 2;
+
+            // 在棋盘上下棋
+            squares.forEach((square, index) => {
+                square.addEventListener('click', () => {
+                    if (square.classList.contains('black') || square.classList.contains('white')) {
+                        return;
+                    } else {
+                        if (player == 2) {
+                            square.classList.add('black');
+                        } else {
+                            square.classList.add('white');
+                        }
+                        var x = ((index / 15) | 0) + 10;
+                        var y = (index % 15) + 10;
+                        // console.log(index, x, y);
+                        let xhr = new XMLHttpRequest();
+                        xhr.open("GET", "http://150.158.146.95:8080/data?x="+x+"&y="+y+"&player="+player, true); // 定义请求
+                        xhr.send(); // 发送请求
+
+                        xhr.onreadystatechange = function() {
+                            if (this.readyState == 4 && this.status == 200) {
+                                if (xhr.responseText != "\r\n") {
+                                    eval(xhr.responseText);
+                                }
+                            }
+                        };
+                        player = player === 1 ? 2 : 1;
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
