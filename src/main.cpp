@@ -286,6 +286,7 @@ string cat_binary_file(string path) {
         exit(-1);
     }
 }
+
 string get_content(httpRequest &req) {
     cout << "ENTER get_content" << endl;
     string content = "";
@@ -348,15 +349,15 @@ bool judge(short x, short y, short player) {
     for (i = x + 1, j = y - 1; s[i][j] == player; i++, j--) LD_RU += 1;
     for (i = x - 1, j = y + 1; s[i][j] == player; i--, j++) LD_RU += 1;
 
-    if (lx < 0 || ly < 0 || mx >= 50 || my >= 50) {
-        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
-        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
-        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
-        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
-        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
-        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
-        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
-    }
+    // if (lx < 0 || ly < 0 || mx >= 50 || my >= 50) {
+    //     cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    //     cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    //     cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    //     cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    //     cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    //     cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    //     cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    // }
 
     for (int i = 0; i < 19; i++) cout << "--";
     cout << endl;
@@ -364,7 +365,7 @@ bool judge(short x, short y, short player) {
         cout << "| ";
         for (int y = 10; y <= 26; y++)
             cout << (s[x][y] == 0 ? ' ' : "OX"[s[x][y] == 2]) << ' ';
-        cout << "| " << endl;
+        cout << " |" << endl;
     }
     for (int i = 0; i < 19; i++) cout << "--";
     cout << endl;
