@@ -75,11 +75,11 @@
                         } else {
                             square.classList.add('white');
                         }
-                        var x = ((index / 15) | 0) + 10;
+                        var x =  Math.floor(index / 15) + 10
                         var y = (index % 15) + 10;
                         // console.log(index, x, y);
                         let xhr = new XMLHttpRequest();
-                        xhr.open("GET", "http://150.158.146.95:8080/data?x="+x+"&y="+y+"&player="+player, true); // 定义请求
+                        xhr.open("GET", "http://150.158.146.95:8888/data?x="+x+"&y="+y+"&player="+player, true); // 定义请求
                         xhr.send(); // 发送请求
 
                         xhr.onreadystatechange = function() {

@@ -17,12 +17,12 @@
 #include <algorithm>
 using namespace std;
 
-const int SERVER_PORT = 8080;  // 服务器端口号
+const int SERVER_PORT = 8888;  // 服务器端口号
 const int BROAD_SIZE = 225;
 const string END = "\r\n";
 
 int cnt;
-short s[50][50];
+vector<vector<short>> s;
 
 void perror_exit(const char *description);
 int start_Listen();
@@ -30,9 +30,8 @@ string cat_text_file(string path);
 string cat_binary_file(string path);
 string get_content(httpRequest &req);
 bool judge(short x, short y, short player);
-
-
 int main(int argc, char *args[]) {
+    s = vector<vector<short>>(50, vector<short>(50));
 
     int ret, len;
     
@@ -58,7 +57,7 @@ int main(int argc, char *args[]) {
         req.read_analysis(client_fd);
         string content = get_content(req);
         
-        cout << req << endl;
+        // cout << req << endl;
 
 
         httpResponse rsp(req.version, req.type, content);
@@ -66,14 +65,15 @@ int main(int argc, char *args[]) {
 
         string msg = rsp.to_string();
         len = send(client_fd, msg.c_str(), msg.size(), 0);
+        msg.clear();
         if (len <= 0) {
             cout << "Send Error!" << endl;
         } else {
             cout << "Send Succeeded!" << endl;
         }
 
-        cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-
+        cout << "--------------------------------------------------------------------------------------------" << endl;
+        
         close(client_fd);
     }
     close(server_fd);
@@ -186,8 +186,12 @@ vector<string> split(string &str, char c) { // c 为分隔符
 }
 
 void httpRequest::read_analysis(int &client_fd) {
-    char buff[10240] = {0};
-    int len = read(client_fd, buff, sizeof buff);
+    cout << "ENTER read_analysis" << endl;
+    // char* buff = new char[10240];
+    char* buff = new char[10240];
+    // int len = read(client_fd, buff, sizeof(buff) - 1);
+    int len = read(client_fd, buff, 10240 - 1);
+    buff[len] = '\0';
     if (len <= 0) perror_exit("Read Error");
     stringstream sline(buff);
     string line;
@@ -195,7 +199,6 @@ void httpRequest::read_analysis(int &client_fd) {
     //  处理请求行
     getline(sline, line), Format(line);
     vector<string> first_line = split(line, ' ');
-
     method = first_line[0];                                // method
     version = first_line[2];                               // version
     vector<string> url_args = split(first_line[1], '?');
@@ -213,6 +216,7 @@ void httpRequest::read_analysis(int &client_fd) {
         key_value = split(item, '=');
         key_value.resize(2);
         this->args[key_value[0]] = key_value[1];           // args[key] = value
+        key_value.clear();
     }
 
     //  处理请求头
@@ -222,15 +226,22 @@ void httpRequest::read_analysis(int &client_fd) {
         key_value = split(line, ':');
         key_value.resize(2);
         headers[key_value[0]] = key_value[1];              // headers[key] = value
+        key_value.clear();
     }
 
     body = "";
     while (getline(sline, line)) {
         body += line;
     }
+    first_line.clear();
+    url_args.clear();
+    args.clear();
+    key_value.clear();
+    delete[] buff;
 }
 
 string httpResponse::to_string() {
+    cout << "ENTER to_string" << endl;
     string result = "";
     result += version + ' ' + status_code + ' ' + status_msg + END;
     for (auto p : headers) result += p.first + ": " + p.second + END;
@@ -276,17 +287,20 @@ string cat_binary_file(string path) {
     }
 }
 string get_content(httpRequest &req) {
+    cout << "ENTER get_content" << endl;
     string content = "";
     if (req.type == ".html") {           
         if (req.url == "/index.html") {
             cnt = 0;
-            memset(s, 0, sizeof s);
+            for (auto &v : s)
+                for (auto &x : v)
+                    x = 0;
         }
         content = cat_text_file(req.url);
     } else if (req.type == ".ico" || req.type == ".jpg" || req.type == ".jpeg" || req.type == ".png") {
         content = cat_binary_file(req.url);
     } else if (req.type == "data") {
-        int x, y, player;
+        short x, y, player;
         cnt += 1;
         for (auto &p : req.args) {
             if (p.first == "x") {
@@ -307,16 +321,23 @@ string get_content(httpRequest &req) {
         cout << "Cannot recognize the type of the requested file!" << endl;
         exit(-1);
     }
+    content += END;
     return content;
 }
 
 bool judge(short x, short y, short player) {
+    cout << "ENTER JUDGE" << endl;
     s[x][y] = player;
     short L_R, U_D, LU_RD, LD_RU, i, j;
+    short lx, ly, mx, my;
+    lx = ly = 10000;
+    mx = my = -10000;
     L_R = U_D = LU_RD = LD_RU = 1;
 
     for (j = y - 1; s[x][j] == player; j--) L_R += 1;        
     for (j = y + 1; s[x][j] == player; j++) L_R += 1;
+    mx = max(mx, x), my = max(my, y);
+    lx = min(lx, x), ly = min(ly, y);
 
     for (i = x - 1; s[i][y] == player; i--) U_D += 1;
     for (i = x + 1; s[i][y] == player; i++) U_D += 1;
@@ -326,6 +347,28 @@ bool judge(short x, short y, short player) {
 
     for (i = x + 1, j = y - 1; s[i][j] == player; i++, j--) LD_RU += 1;
     for (i = x - 1, j = y + 1; s[i][j] == player; i--, j++) LD_RU += 1;
+
+    if (lx < 0 || ly < 0 || mx >= 50 || my >= 50) {
+        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+        cout << "ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n";
+    }
+
+    for (int i = 0; i < 19; i++) cout << "--";
+    cout << endl;
+    for (int x = 10; x <= 26; x++) {
+        cout << "| ";
+        for (int y = 10; y <= 26; y++)
+            cout << (s[x][y] == 0 ? ' ' : "OX"[s[x][y] == 2]) << ' ';
+        cout << "| " << endl;
+    }
+    for (int i = 0; i < 19; i++) cout << "--";
+    cout << endl;
+        
 
     cout << "Player" << player  << ' ' << x << ' ' << y << endl;
     cout << "MaxLength: " << max({L_R, U_D, LU_RD, LD_RU}) << endl;
